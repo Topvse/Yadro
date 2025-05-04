@@ -1,0 +1,44 @@
+---
+- name: Run script in DOcker
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Build DOcker image
+      community.docker.docker_image:
+        name: bash-http-script
+        source: build
+        build:
+          path: "{{ playbook_dir }}"
+        state: present
+
+    - name: Run container
+      community.docker.docker_container:
+        name: http-script-container
+        image: bash-http-script
+        state: started
+        auto_remove: false
+        detach: true
+        tty: true
+
+    - name: Wait for container to stop
+      command: docker wait http-script-container
+      register: container_exit_code
+
+    - name: Exit code
+      debug:
+        msg: "Exit code {{ container_exit_code.stdout }}"
+
+    - name: Container failed
+      fail:
+        msg: "IF none 0 code : {{ container_exit_code.stdout }}"
+      when: container_exit_code.stdout != "0"
+
+    - name: Container logs
+      command: docker logs http-script-container
+      register: container_logs
+      ignore_errors: true
+
+    - name: Script output
+      debug:
+        var: container_logs.stdout

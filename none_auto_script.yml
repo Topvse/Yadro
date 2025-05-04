@@ -1,0 +1,37 @@
+---
+- name: Check script
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Build Docker image
+      community.docker.docker_image:
+        name: bash-http-script
+        source: build
+        build:
+          path: "{{ playbook_dir }}"
+        state: present
+
+    - name: Run container with script
+      community.docker.docker_container:
+        name: http-script-container
+        image: bash-http-script
+        state: started
+        auto_remove: no
+        detach: false
+        tty: true
+
+    - name: Wait container stop
+      shell: docker wait http-script-container
+      register: container_exit_code
+      ignore_errors: yes
+
+    - name: Show exit code
+      debug:
+        msg: "Exit code: {{ container_exit_code.stdout | default('not available') }}"
+
+    - name: Logs
+      command: docker logs http-script-container
+      register: container_logs
+      ignore_errors: yes
+      no_log: true

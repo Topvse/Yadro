@@ -1,0 +1,53 @@
+---
+- name: Install Docker
+  hosts: localhost
+  vars:
+    ansible_user: tvs1
+  become: yes
+  tasks:
+    - name: Install depend
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+        update_cache: yes
+
+    - name: Docker GPG key
+      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+      args:
+        creates: /etc/apt/trusted.gpg.d/docker.asc
+
+    - name: Docker repo
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release | lower }} stable"
+        state: present
+
+    - name: Docker CE
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: yes
+
+    - name: Add user
+      user:
+        name: "{{ ansible_user }}"
+        group: docker
+
+    - name: Start service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Docker install
+      command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Docker version
+      debug:
+        var: docker_version.stdout
