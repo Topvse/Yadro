@@ -16,9 +16,9 @@
 │
 ├── install_docker.yml # Playbook для установки Docker
 │
-├── none_auto_script.yml # Playbook для проверки работы скрипта в контейнере и проверка логов вручную
+├── none_auto_script.yml # Playbook для проверки скрипта в контейнере и логов вручную
 │
-├── check_script_auto.yml # Playbook для автоматической проверки работы скрипта
+├── check_script_auto.yml # Playbook для автоматической проверки скрипта
 │
            **Раздел 1**
     Перед запуском скрипта выдаём права 
